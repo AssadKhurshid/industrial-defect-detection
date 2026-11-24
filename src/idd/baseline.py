@@ -1,7 +1,8 @@
 """Classical baseline: per-pixel statistics of good images, no learning beyond mean and spread.
 
-Works when parts are photographed in the same position (most MVTec objects). Expected to be
-weak on textures (carpet, wood), where no pixel position has a fixed "normal" value.
+Works when parts are photographed in the same position on an even surface. On MVTec AD it
+does well on bottle, toothbrush, wood and tile, and fails where good parts vary in position or
+rotation (screw, metal_nut) and on carpet: there a pixel has no fixed "normal" value.
 """
 
 import cv2

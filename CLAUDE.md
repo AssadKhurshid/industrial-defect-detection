@@ -25,4 +25,4 @@ Milestones (tick them in the 365 Build Log):
 5. FastAPI /inspect + Dockerfile + pinned requirements + Docker build in CI
 6. README: results, latency, heatmap examples, limitations. Optional: MQTT publish
 
-Current status: milestone 2 code done (PixelStatsBaseline, auroc, f1_max). Next: run baseline on all 15 MVTec categories on Kaggle.
+Current status: milestone 2 done. Baseline on 15 MVTec categories: mean AUROC 0.740 (bottle 0.977 ... screw 0.454); F1-max mostly at the "all defect" floor. Next: milestone 3, PatchCore-lite.
