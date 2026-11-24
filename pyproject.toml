@@ -10,7 +10,8 @@ requires-python = ">=3.10"
 dependencies = ["numpy", "opencv-python-headless"]
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff"]
+dev = ["pytest", "ruff", "torch", "torchvision"]
+deep = ["torch", "torchvision"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
