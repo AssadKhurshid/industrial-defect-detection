@@ -25,4 +25,4 @@ Milestones (tick them in the 365 Build Log):
 5. FastAPI /inspect + Dockerfile + pinned requirements + Docker build in CI
 6. README: results, latency, heatmap examples, limitations. Optional: MQTT publish
 
-Current status: milestone 1 done (MVTec loader, idd.data.load_split). Next: milestone 2, OpenCV baseline.
+Current status: milestone 2 code done (PixelStatsBaseline, auroc, f1_max). Next: run baseline on all 15 MVTec categories on Kaggle.

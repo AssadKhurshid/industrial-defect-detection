@@ -7,7 +7,7 @@ name = "industrial-defect-detection"
 version = "0.1.0"
 description = "Surface defect detection on MVTec AD: OpenCV baseline vs deep model, ONNX on CPU, FastAPI + Docker"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = ["numpy", "opencv-python-headless"]
 
 [project.optional-dependencies]
 dev = ["pytest", "ruff"]
