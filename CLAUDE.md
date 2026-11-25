@@ -25,4 +25,4 @@ Milestones (tick them in the 365 Build Log):
 5. FastAPI /inspect + Dockerfile + pinned requirements + Docker build in CI
 6. README: results, latency, heatmap examples, limitations. Optional: MQTT publish
 
-Current status: milestone 2 done. Baseline on 15 MVTec categories: mean AUROC 0.740 (bottle 0.977 ... screw 0.454); F1-max mostly at the "all defect" floor. Milestone 3 code done (idd.patchcore, fake-backbone tests). Next: PatchCore run on Kaggle GPU, 15 categories.
+Current status: milestone 3 done. Baseline mean AUROC 0.740, PatchCore-lite mean AUROC 0.988 (Kaggle T4, all 15 categories, min pill 0.953). Next: milestone 4, ONNX export + CPU latency.
