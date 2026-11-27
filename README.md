@@ -2,8 +2,6 @@
 
 Find surface defects (scratches, cracks, contamination, missing parts) in product images for automated visual inspection. A classical OpenCV baseline is compared with a deep anomaly model trained only on good parts, and the model runs as a CPU service with measured latency.
 
-> Work in progress. The API and Docker image land with milestone 5.
-
 ## Results
 Image-level, MVTec AD test split, per category. Each model is fit on that category's `train/good` images only. Baseline: one Kaggle CPU run, about 50 min for all 15 categories. Deep model: PatchCore-lite (pretrained Wide ResNet-50 features, 224 px, 10% coreset), one Kaggle run on a Tesla T4, about 50 min for all 15 categories (mostly building the memory bank).
 
@@ -49,6 +47,17 @@ Reproduce: `python scripts/benchmark.py out/onnx/model.onnx` (model from `notebo
 pip install -e ".[dev]"
 pytest
 ```
+
+API (Docker, CPU, no PyTorch in the image). The model is not in the repo: get `model.onnx` + `model.onnx.data` from the `notebooks/kaggle_export` Kaggle job and put them in `out/onnx/`.
+```bash
+docker build -t idd .
+docker run -p 8000:8000 -v $(pwd)/out/onnx:/models -e IDD_THRESHOLD=2.0 idd
+curl -F "image=@bottle.png" localhost:8000/inspect
+# {"score": 3.4628, "threshold": 2.0, "is_defect": true, "model_ms": 291.6}
+```
+Measured with the bottle model on the laptop (API run locally, not in Docker): MVTec `bottle/test/broken_large/000.png` scores 3.46 (defect), `bottle/test/good/000.png` scores 1.36 (good).
+
+`IDD_THRESHOLD` is the score above which an image counts as a defect. It has to be set per product from good parts on the line; 2.0 here is only an example. Without it the API returns the score and `"is_defect": null`.
 
 ## How it works
 _tbd_

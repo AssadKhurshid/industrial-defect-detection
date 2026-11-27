@@ -13,25 +13,17 @@ Idea (Roth et al., 2022, "Towards Total Recall in Industrial Anomaly Detection")
 import torch
 import torch.nn.functional as F
 
-IMAGENET_MEAN = (0.485, 0.456, 0.406)
-IMAGENET_STD = (0.229, 0.224, 0.225)
+from idd.preprocess import to_input
 
 
 def load_image(path, size: int = 224) -> torch.Tensor:
-    """RGB image -> (3, size, size) tensor: resize the short side, center crop, ImageNet normalise
-    (the backbone was trained on images prepared this way)."""
+    """Image file -> (3, size, size) tensor, prepared like the backbone's ImageNet training images."""
     import cv2
 
     image = cv2.imread(str(path), cv2.IMREAD_COLOR)
     if image is None:
         raise FileNotFoundError(f"cannot read image {path}")
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    resize = round(size * 256 / 224)  # resize 256 then crop 224, scaled to any size
-    image = cv2.resize(image, (resize, resize), interpolation=cv2.INTER_AREA)
-    top = (resize - size) // 2
-    image = image[top : top + size, top : top + size]
-    x = torch.from_numpy(image).permute(2, 0, 1).float() / 255
-    return (x - torch.tensor(IMAGENET_MEAN)[:, None, None]) / torch.tensor(IMAGENET_STD)[:, None, None]
+    return torch.from_numpy(to_input(image, size))
 
 
 def wide_resnet50_backbone():

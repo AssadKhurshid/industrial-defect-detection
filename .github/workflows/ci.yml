@@ -13,3 +13,16 @@ jobs:
       - run: pip install -e ".[dev]"
       - run: ruff check .
       - run: pytest
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t idd .
+      # The image has no model, so check that the API imports and answers /health.
+      - run: docker run --rm idd python -c "import idd.api"
+      - run: docker run -d -p 8000:8000 --name idd idd
+      # Wait up to 60 s for the API to answer, then show the container log on failure.
+      - run: |
+          for i in $(seq 1 30); do curl -sf localhost:8000/health && exit 0; sleep 2; done
+          docker logs idd
+          exit 1
