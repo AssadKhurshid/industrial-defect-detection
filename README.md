@@ -2,7 +2,7 @@
 
 Find surface defects (scratches, cracks, contamination, missing parts) in product images for automated visual inspection. A classical OpenCV baseline is compared with a deep anomaly model trained only on good parts, and the model runs as a CPU service with measured latency.
 
-> Work in progress. Latency lands with milestone 4, the API and Docker image with milestone 5.
+> Work in progress. The API and Docker image land with milestone 5.
 
 ## Results
 Image-level, MVTec AD test split, per category. Each model is fit on that category's `train/good` images only. Baseline: one Kaggle CPU run, about 50 min for all 15 categories. Deep model: PatchCore-lite (pretrained Wide ResNet-50 features, 224 px, 10% coreset), one Kaggle run on a Tesla T4, about 50 min for all 15 categories (mostly building the memory bank).
@@ -32,7 +32,17 @@ The baseline (per-pixel mean and spread of good images) works where every part s
 
 PatchCore-lite reaches AUROC 0.95 or higher in every category (mean 0.988) and fixes exactly the baseline's failures: screw 0.454 -> 0.964, carpet 0.459 -> 0.989, metal_nut 0.587 -> 1.000. It compares small patches by what they look like, not pixels by where they are, so a rotated screw or a random carpet texture still matches good patches. Its weakest categories are pill (0.953) and screw (0.964), where defects are small relative to the 8-pixel patch grid at 224 px.
 
-Latency (one image, CPU): _tbd_
+### Latency
+One 224 px image through the bottle model (image in, anomaly map out), batch size 1, on a laptop CPU: Intel Core i5-8365U (4 cores / 8 threads, 1.6 GHz), 200 runs after 10 warm-up runs. Image decoding and resizing are not included.
+
+| Runtime | p50 | p95 |
+| --- | --- | --- |
+| ONNX Runtime 1.32 | 458 ms | 769 ms |
+| PyTorch 2.15 (eager) | 618 ms | 891 ms |
+
+ONNX Runtime is about 26% faster at the median. The median is stable (a second run gave 462 ms and 668 ms), the p95 is not (553 ms and 1000 ms in the second run): this is a laptop with other programs running, not a dedicated machine. At ~0.5 s per image this suits a slow inspection station, not a fast production line. Most of the time is probably the nearest-neighbour search, not the CNN: comparing 784 patches with 16,385 bank entries of 1,536 numbers is ~40 GFLOP, about twice the CNN's share. A smaller coreset is the first thing to try.
+
+Reproduce: `python scripts/benchmark.py out/onnx/model.onnx` (model from `notebooks/kaggle_export`).
 
 ## Run it
 ```bash

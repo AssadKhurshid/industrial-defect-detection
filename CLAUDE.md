@@ -25,4 +25,4 @@ Milestones (tick them in the 365 Build Log):
 5. FastAPI /inspect + Dockerfile + pinned requirements + Docker build in CI
 6. README: results, latency, heatmap examples, limitations. Optional: MQTT publish
 
-Current status: milestone 3 done. Baseline mean AUROC 0.740, PatchCore-lite mean AUROC 0.988 (Kaggle T4, all 15 categories, min pill 0.953). Next: milestone 4, ONNX export + CPU latency.
+Current status: milestone 4 done. PatchCore-lite mean AUROC 0.988 (baseline 0.740). Bottle model in ONNX matches PyTorch (AUROC 1.000 both). CPU latency on i5-8365U: ONNX Runtime p50 458 ms / p95 769 ms, PyTorch 618 / 891 ms. Next: milestone 5, FastAPI /inspect + Docker.
