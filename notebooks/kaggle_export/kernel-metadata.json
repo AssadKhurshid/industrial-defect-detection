@@ -1,0 +1,13 @@
+{
+  "id": "assadkhurshid/idd-export-onnx",
+  "title": "idd export onnx",
+  "code_file": "run.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": ["avdvhh/mvtec-defect-detection-dataset"],
+  "competition_sources": [],
+  "kernel_sources": []
+}
