@@ -2,6 +2,10 @@
 
 Find surface defects (scratches, cracks, contamination, missing parts) in product images for automated visual inspection. A classical OpenCV baseline is compared with a deep anomaly model trained only on good parts, and the model runs as a CPU service with measured latency.
 
+![Defect images with true mask, baseline map and PatchCore map](assets/heatmaps.jpg)
+
+The first defect image of each category's test split (sorted order, not hand-picked), for the easy bottle and the baseline's three failures. Each map is scaled to its own range, so compare where it is bright, not how bright. PatchCore marks the defect in all four. The baseline finds the broken bottle rim and, surprisingly, the carpet's colour spot, but on carpet good images also reach high values somewhere, so its image score does not separate good from bad (AUROC 0.459). On the screw it lights up the whole part, because the screw lies at a different angle than in the average good image. Images from MVTec AD (CC BY-NC-SA 4.0); figure made by `notebooks/kaggle_heatmaps`.
+
 ## Results
 Image-level, MVTec AD test split, per category. Each model is fit on that category's `train/good` images only. Baseline: one Kaggle CPU run, about 50 min for all 15 categories. Deep model: PatchCore-lite (pretrained Wide ResNet-50 features, 224 px, 10% coreset), one Kaggle run on a Tesla T4, about 50 min for all 15 categories (mostly building the memory bank).
 
@@ -60,10 +64,24 @@ Measured with the bottle model on the laptop (API run locally, not in Docker): M
 `IDD_THRESHOLD` is the score above which an image counts as a defect. It has to be set per product from good parts on the line; 2.0 here is only an example. Without it the API returns the score and `"is_defect": null`.
 
 ## How it works
-_tbd_
+Both models learn only from good parts. That matches the factory: defects are rare and every new kind looks different, so there are too few examples to train a classifier on.
+
+- **Baseline** ([`idd/baseline.py`](src/idd/baseline.py)): grayscale 256 px, per-pixel mean and standard deviation over the good images. A test pixel's anomaly value is how many standard deviations it is from its mean (z-score, with Gaussian smoothing); the image score is the largest value.
+- **PatchCore-lite** ([`idd/patchcore.py`](src/idd/patchcore.py)), after Roth et al. 2022:
+  1. A Wide ResNet-50 pretrained on ImageNet (not fine-tuned) turns every 8x8 px patch of a 224 px image into a 1,536-number feature vector (layer2 + layer3, each averaged with its 3x3 neighbours).
+  2. Fit: the features of all good training patches form a memory bank. A greedy k-center coreset keeps 10% of them, spread out so every good patch has a close neighbour in the bank.
+  3. Score: each patch's distance to its nearest neighbour in the bank gives a 28x28 anomaly map; the image score is the largest patch distance.
+  "Lite": no re-weighting of the image score by the neighbourhood density, which the paper adds.
+- **Serving** ([`idd/export.py`](src/idd/export.py), [`idd/api.py`](src/idd/api.py)): CNN, pooling and memory bank go into one ONNX graph (the nearest-neighbour search written as a matrix product). The API decodes the image with OpenCV and runs the graph on ONNX Runtime, with no PyTorch in the Docker image.
 
 ## Limitations
-_tbd_
+- **One dataset, lab images.** MVTec AD has 60-400 well-lit, centred images per product. A real line brings new lighting, positions and cameras; the model must be refit on that line's good parts, and the numbers above do not transfer.
+- **Image-level metrics only.** The table says whether an image is defective, not how well the map outlines the defect (pixel-level AUROC / PRO were not measured). The heatmaps above are four examples, not a measurement.
+- **No threshold from data.** AUROC and F1-max do not fix a decision threshold, and F1-max picks the best one on the test set itself, so it is optimistic. In use, `IDD_THRESHOLD` must be set from good parts on the line (for example a high percentile of their scores) and checked against known defects.
+- **Small defects.** One patch is 8x8 px of a 224 px image, so defects much smaller than that are blurred into their neighbours: pill (0.953) and screw (0.964) are the weakest categories.
+- **Latency.** ~0.5 s per image on a 2019 laptop CPU, for one product with a 16,385-entry bank. Fine for a slow inspection station; a fast line needs a smaller bank, a smaller backbone or a GPU. Measured on one machine, with other programs running (p95 varied between runs).
+- **One model per product.** Each category has its own memory bank and ONNX file (~200 MB); the API serves one at a time.
+- **Licence.** MVTec AD is non-commercial (CC BY-NC-SA 4.0): treat models fit on it as non-commercial too.
 
 ## Data
 [MVTec AD](https://www.mvtec.com/company/research/datasets/mvtec-ad) (Bergmann et al., 2019/2021), licence [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/): non-commercial use only. Not stored in this repo.

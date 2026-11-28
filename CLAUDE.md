@@ -25,4 +25,4 @@ Milestones (tick them in the 365 Build Log):
 5. FastAPI /inspect + Dockerfile + pinned requirements + Docker build in CI
 6. README: results, latency, heatmap examples, limitations. Optional: MQTT publish
 
-Current status: milestone 5 code done (idd.api /inspect on ONNX Runtime, Dockerfile, pinned requirements.txt, Docker job in CI; image not built locally, no Docker on the laptop). PatchCore-lite mean AUROC 0.988 (baseline 0.740); CPU latency i5-8365U ONNX p50 458 ms. Next: milestone 6, README heatmaps + limitations.
+Current status: milestone 6 done (heatmap figure, How it works, Limitations). Core P1 complete: PatchCore-lite mean AUROC 0.988 vs baseline 0.740; ONNX on i5-8365U p50 458 ms; FastAPI + Docker in CI. Left: optional MQTT, make Kaggle notebooks public, pin repo on profile.
